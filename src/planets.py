@@ -66,6 +66,10 @@ class Planet:
             return self.trans_mat(r) @ self.IMF
         
     
+    def IMF_from_MS(self, r, B):
+        return np.linalg.inv(self.trans_mat(r)) @ B
+        
+    
     def parab(self, y, z, f, R):
         return -(y**2 + z**2) / (4 * f) + R
     
