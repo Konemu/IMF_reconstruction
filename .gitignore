@@ -1,3 +1,6 @@
+imf_venv
+#plots
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
