@@ -12,8 +12,7 @@ def get_exact_field(planet, n, xs, ys):
     for i in range(n):
         for j in range(n):            
             r = np.array([xs[i], ys[j], 0], dtype=np.double)
-            if planet.check_vector_in_sheath(r):
-                [BX[j][i], BY[j][i], BZ[j][i]] = planet.MS_from_IMF(r) # !!!
+            [BX[j][i], BY[j][i], BZ[j][i]] = planet.MS_from_IMF(r) # !!!
     return BX, BY, BZ
 
 
@@ -26,10 +25,7 @@ def get_reconstructed_field(planet, n, xs, ys, BX, BY, BZ):
     for i in range(n):
         for j in range(n):            
             r = np.array([xs[i], ys[j], 0], dtype=np.double)
-            if planet.check_vector_in_sheath(r):
-                [BSWX[j][i], BSWY[j][i], BSWZ[j][i]] = planet.IMF_from_MS(r, np.array([BX[j][i], BY[j][i], BZ[j][i]], dtype=np.double)) # !!!
-            else:
-                [BSWX[j][i], BSWY[j][i], BSWZ[j][i]] = planet.IMF
+            [BSWX[j][i], BSWY[j][i], BSWZ[j][i]] = planet.IMF_from_MS(r, np.array([BX[j][i], BY[j][i], BZ[j][i]], dtype=np.double)) # !!!           
     return BSWX, BSWY, BSWZ
 
 
@@ -45,12 +41,15 @@ def relative_reconstruction_errors_geometry(planet, R_bs_dist, R_mp_dist, n_r, x
     disturbed_planet = planets.Planet(R_planet=planet.R_planet, R_bowshock=R_bs_dist, R_magnetopause=R_mp_dist, IMF=IMF)
     BSWX_dist, BSWY_dist, BSWZ_dist = get_reconstructed_field(planet=disturbed_planet, n=n_r, xs=xs, ys=ys, BX=BX, BY=BY, BZ=BZ)
 
-    relative_errs_x = np.abs((BSWX_dist - IMF[0]))/B0
-    relative_errs_y = np.abs((BSWY_dist - IMF[1]))/B0
-    relative_errs_z = np.abs((BSWZ_dist - IMF[2]))/B0
-    relative_errs_mag = (np.sqrt(BSWX_dist**2 + BSWY_dist**2 + BSWZ_dist**2) - B0) / B0
+    relative_errs_mag = np.zeros((n_r, n_r), dtype=np.double)
+    for i in range(n_r):
+        for j in range(n_r):            
+            r = np.array([xs[i], ys[j], 0], dtype=np.double)
+            if planet.check_vector_in_sheath(r):
+                relative_errs_mag[j][i] = ( np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]**2) - B0) / B0
+    
 
-    return xs, ys, relative_errs_x, relative_errs_y, relative_errs_z, relative_errs_mag
+    return xs, ys, relative_errs_mag
 
 
 

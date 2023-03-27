@@ -78,30 +78,40 @@ def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):
 
 
 def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, ymax, path):
-    xs, ys, relative_errs_x, relative_errs_y, relative_errs_z, relative_errs_mag \
-        = errors.relative_reconstruction_errors_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, ymax)
-    errs = [[relative_errs_x, relative_errs_y], [relative_errs_z, relative_errs_mag]]
-    lab  = [["$\\delta B_x / B_0$", "$\\delta B_y / B_0$"], ["$\\delta B_z / B_0$", "$\\delta |\\vec{B}| / B_0$"]]
+    xs, ys, relative_errs_mag = errors.relative_reconstruction_errors_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, ymax)
 
-    fig, axes = plt.subplots(nrows=2, ncols=2)
-    for axl, errl, labl in zip(axes, errs, lab):
-        for ax, err, lab in zip(axl, errl, labl):
-            ax.contourf(xs, ys, err)
-            cont = ax.contourf(xs, ys, err, levels=200)
-            cbar = fig.colorbar(cont)
-            ax.set_title(lab)
-            ax.set_aspect(1)
-            ax.set_xlim(xmin, xmax)
-            ax.set_ylim(ymin, ymax)
+    fig, ax = plt.subplots()
 
-            ax.add_artist(plt.Circle((0, 0), planet.R_planet, color="black")) # type: ignore
-            f_bs = planet.R_bowshock - planet.R_magnetopause / 2
-            f_mp = planet.R_magnetopause / 2
-            ax.plot(parab(ys, f_bs, planet.R_bowshock), ys, color="black")
-            ax.plot(parab(ys, f_mp, planet.R_magnetopause), ys, color="black")
+    from matplotlib.cm import ScalarMappable # https://stackoverflow.com/questions/54979958/set-colorbar-range-with-contourf-in-matplotlib
 
-            ax.set_xlabel("$x$ ($R_E$)")
-            ax.set_ylabel("$y$ ($R_E$)")
+    quadcontourset = ax.pcolormesh(
+        xs, ys, relative_errs_mag,  # change this to `levels` to get the result that you want
+        vmin=0, vmax=0.3, rasterized=True
+    )
+    fig.colorbar(
+        ScalarMappable(norm=quadcontourset.norm, cmap=quadcontourset.cmap), # type: ignore
+    )
+
+
+    #ax.contourf(xs, ys, relative_errs_mag)
+    #cont = ax.contourf(xs, ys, relative_errs_mag, levels=200)
+    #cbar = fig.colorbar(cont)
+
+
+
+    ax.set_title("$\\delta |\\vec{B}| / B_0$")
+    ax.set_aspect(1)
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
+
+    ax.add_artist(plt.Circle((0, 0), planet.R_planet, color="black")) # type: ignore
+    f_bs = planet.R_bowshock - planet.R_magnetopause / 2
+    f_mp = planet.R_magnetopause / 2
+    ax.plot(parab(ys, f_bs, planet.R_bowshock), ys, color="black")
+    ax.plot(parab(ys, f_mp, planet.R_magnetopause), ys, color="black")
+
+    ax.set_xlabel("$x$ ($R_E$)")
+    ax.set_ylabel("$y$ ($R_E$)")
     fig.tight_layout()
     fig.savefig(path+"test.pdf")
     
