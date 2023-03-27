@@ -30,7 +30,15 @@ def plot_field_lines(planet, xmin, xmax, ymin, ymax, n, path):
     ax.set_aspect(1)
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
-    fig.savefig(path+"test.pdf")
+
+    ax.set_xlabel("x ($R_E$)")
+    ax.set_ylabel("y ($R_E$)")
+    ax.set_title("$\\vec{B}$ field lines for $\\vec{B}_{SW} = -B_0 \\vec{e}_x$")
+
+    fig.tight_layout()
+    fig.savefig(path+"field_x.pdf")
+    fig.savefig(path+"field_x.png")
+    plt.close(fig)
 
 def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):    
     xs = np.linspace(xmin, xmax, n)
@@ -57,4 +65,12 @@ def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):
     ax.set_aspect(1)
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
+
+    ax.set_xlabel("x ($R_E$)")
+    ax.set_ylabel("y ($R_E$)")
+    ax.set_title("$\\det T$")
+
+    fig.tight_layout()
     fig.savefig(path+"det.pdf")
+    fig.savefig(path+"det.png")
+    plt.close(fig)
