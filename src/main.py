@@ -7,11 +7,14 @@ import matplotlib as plt
 
 from numba import set_num_threads
 set_num_threads(20)
+from numba.core.errors import NumbaPerformanceWarning
+import warnings
+warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 
 import time
 
 
-def main():
+def main():    
     plt.rcParams.update({
     "text.usetex": True,
     "text.latex.preamble": r"\usepackage{amsmath}\usepackage{amssymb}\usepackage{parskip}"
@@ -26,13 +29,14 @@ def main():
     #plotting.plot_rel_errs_field(planet=Earth, n_r=200, n_avg=1, sigma=0.1, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
     
     
-    sigs = np.array([10, 20, 50, 100, 200, 500]) / 6371
+    sigs = np.array([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000]) / 6371
 
-    for sig in sigs:
-        plotting.plot_rel_errs_pos(planet=Earth, n_r=200, n_avg=1, sigma=sig, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
+    #for sig in sigs:
+    #    plotting.plot_rel_errs_pos(planet=Earth, n_r=200, n_avg=1, sigma=sig, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
+    plotting.plot_rel_errs_scaling(planet=Earth, n_r=200, sigmas=sigs, percentile=99, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
 
     end = time.time()
-    print(end-begin, " s")
+    print(end-begin, "s")
 
 if __name__ == "__main__":
     main()

@@ -179,9 +179,56 @@ def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
             ax.set_xlabel("$x$ ($R_E$)")
             ax.set_ylabel("$y$ ($R_E$)")
     
-    fig.suptitle("Field reconstructed from erronious position information.\\\\" + f"$\\sigma={np.round(sigma * 6371, 0)}$ km, $n={n_avg}$ averages, {n_r}x{n_r} grid \\\\ Colorbar maximum = 99.9th percentile")
+    fig.suptitle("Field reconstructed from erronious position information.\\\\" + f"$\\sigma={np.round(sigma * 6371, 0)}$ km, $n={n_avg}$ averages, {n_r}x{n_r} grid \\\\ Colorbar maximum = 99th percentile")
     
     fig.tight_layout()
     fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}.pdf")       
     fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}.png", dpi=300)       
+    plt.close(fig)
+
+
+def plot_rel_errs_scaling(planet, n_r, sigmas, percentile, xmin, xmax, ymin, ymax, path):
+    n_s = len(sigmas)
+    mean_err_mag = np.zeros(n_s)
+    mean_err_X = np.zeros(n_s)
+    mean_err_Y = np.zeros(n_s)
+    mean_err_Z = np.zeros(n_s)
+    percentile_err_mag = np.zeros(n_s)
+    percentile_err_X = np.zeros(n_s)
+    percentile_err_Y = np.zeros(n_s)
+    percentile_err_Z = np.zeros(n_s)
+
+    for sigma, i in zip(sigmas, range(n_s)):
+        xs, ys, err_X, err_Y, err_Z, err_mag = errors.relative_reconstruction_errors_pos(planet, n_r, 1, sigma, xmin, xmax, ymin, ymax)
+        mean_err_mag[i] = err_mag.mean()
+        mean_err_X[i] = err_X.mean()
+        mean_err_Y[i] = err_Y.mean()
+        mean_err_Y[i] = err_Y.mean()
+        percentile_err_mag[i] = np.percentile(err_mag, percentile, axis=None)
+        percentile_err_X[i] = np.percentile(err_X, percentile, axis=None)
+        percentile_err_Y[i] = np.percentile(err_Y, percentile, axis=None)
+        percentile_err_Z[i] = np.percentile(err_Z, percentile, axis=None)
+
+    fig, ax = plt.subplots()
+    #ax.plot(sigmas, mean_err_mag, label="Mean err magnitude")
+    #ax.plot(sigmas, mean_err_X, label="Mean err X")
+    #ax.plot(sigmas, mean_err_Y, label="Mean err Y")
+    #ax.plot(sigmas, mean_err_Z, label="Mean err Y")
+    ax.plot(sigmas, percentile_err_mag, label=f"{percentile}th percentile err magnitude")
+    ax.plot(sigmas, percentile_err_X, label=f"{percentile}th percentile err X")
+    ax.plot(sigmas, percentile_err_Y, label=f"{percentile}th percentile err Y")
+    ax.plot(sigmas, percentile_err_Z, label=f"{percentile}th percentile err Z")
+    
+    #ax.set_title(lab)
+
+    ax.set_xlabel("$\\sigma$ ($R_\\text{E}$)")
+    ax.set_ylabel("$\\delta B$")
+    ax.legend()
+    ax.loglog()
+    
+    #fig.suptitle("Field reconstructed from erronious position information.\\\\" + f"$\\sigma={np.round(sigma * 6371, 0)}$ km, $n={n_avg}$ averages, {n_r}x{n_r} grid \\\\ Colorbar maximum = 99th percentile")
+    
+    fig.tight_layout()
+    fig.savefig(path+f"err_scale.pdf")       
+    fig.savefig(path+f"err_scale.png", dpi=300)       
     plt.close(fig)
