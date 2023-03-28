@@ -38,7 +38,7 @@ def plot_field_lines(planet, xmin, xmax, ymin, ymax, n, path):
 
     fig.tight_layout()
     fig.savefig(path+"field_x.pdf")
-    fig.savefig(path+"field_x.png")
+    fig.savefig(path+"field_x.png", dpi=300)
     plt.close(fig)
 
 def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):    
@@ -73,7 +73,7 @@ def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):
 
     fig.tight_layout()
     fig.savefig(path+"det.pdf")
-    fig.savefig(path+"det.png")
+    fig.savefig(path+"det.png", dpi=300)
     plt.close(fig)
 
 
@@ -115,7 +115,7 @@ def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, 
     fig.suptitle(f"{n_r}x{n_r} grid"+", $\\tilde R_\\text{MP}=9.1$, $\\tilde R_\\text{BS}=12.6,$")
     fig.tight_layout()
     fig.savefig(path+"err_geometry.pdf")
-    fig.savefig(path+"err_geometry.png")
+    fig.savefig(path+"err_geometry.png", dpi=300)
     plt.close(fig)
 
 
@@ -129,7 +129,7 @@ def plot_rel_errs_field(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path)
 
     for axl, errl, labl in zip(axes, errs, labels):
         for ax, err, lab in zip(axl, errl, labl):
-            cont = ax.pcolormesh(xs, ys, err, vmin=-0.2, vmax=0.2, rasterized=True, cmap="seismic")
+            cont = ax.pcolormesh(xs, ys, err, vmin=-0.4, vmax=0.4, rasterized=True, cmap="bwr")
             cbar = fig.colorbar(cont)
             ax.set_title(lab)
             ax.set_aspect(1)
@@ -145,11 +145,43 @@ def plot_rel_errs_field(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path)
             ax.set_xlabel("$x$ ($R_E$)")
             ax.set_ylabel("$y$ ($R_E$)")
     
-    fig.suptitle(f"$\\sigma={sigma}$, $n={n_avg}$ averages, {n_r}x{n_r} grid")
+    fig.suptitle(f"$\\sigma={sigma}$ $B_0$, $n={n_avg}$ averages, {n_r}x{n_r} grid")
     
     fig.tight_layout()
     fig.savefig(path+"err_field.pdf")       
-    fig.savefig(path+"err_field.png")       
+    fig.savefig(path+"err_field.png", dpi=300)       
     plt.close(fig)
 
+def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
+    xs, ys, err_X, err_Y, err_Z, err_mag = errors.relative_reconstruction_errors_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax)
+
+    errs = [[err_X, err_Y], [err_Z, err_mag]]
+    labels = [["$\\delta B_x / B_{0,x}$", "$\\delta B_y / B_{0,y}$"], ["$\\delta B_z / B_{0,z}$", "$\\delta |\\vec{B}| / B_0$"]]
+
+    fig, axes = plt.subplots(ncols=2, nrows=2)
+
+    for axl, errl, labl in zip(axes, errs, labels):
+        for ax, err, lab in zip(axl, errl, labl):
+            maxerr = np.percentile(err, 99, axis=None)
+            cont = ax.pcolormesh(xs, ys, err, vmin=-maxerr, vmax=maxerr, rasterized=True, cmap="bwr") # type: ignore
+            cbar = fig.colorbar(cont)
+            ax.set_title(lab)
+            ax.set_aspect(1)
+            ax.set_xlim(xmin, xmax)
+            ax.set_ylim(ymin, ymax)
+
+            ax.add_artist(plt.Circle((0, 0), planet.R_planet, color="black")) # type: ignore
+            f_bs = planet.R_bowshock - planet.R_magnetopause / 2
+            f_mp = planet.R_magnetopause / 2
+            ax.plot(parab(ys, f_bs, planet.R_bowshock), ys, color="black", lw=0.2)
+            ax.plot(parab(ys, f_mp, planet.R_magnetopause), ys, color="black", lw=0.2)
+
+            ax.set_xlabel("$x$ ($R_E$)")
+            ax.set_ylabel("$y$ ($R_E$)")
     
+    fig.suptitle("Field reconstructed from erronious position information.\\\\" + f"$\\sigma={np.round(sigma * 6371, 0)}$ km, $n={n_avg}$ averages, {n_r}x{n_r} grid \\\\ Colorbar maximum = 99.9th percentile")
+    
+    fig.tight_layout()
+    fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}.pdf")       
+    fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}.png", dpi=300)       
+    plt.close(fig)
