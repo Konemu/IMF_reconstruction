@@ -10,13 +10,13 @@ def get_exact_field(planet, n, xs, ys):
     BY = np.zeros((n, n), dtype=np.double)
     BZ = np.zeros((n, n), dtype=np.double)
     for i in range(n):
-        for j in range(n):            
+        for j in prange(n):            
             r = np.array([xs[i], ys[j], 0], dtype=np.double)
             [BX[j][i], BY[j][i], BZ[j][i]] = planet.MS_from_IMF(r) # !!!
     return BX, BY, BZ
 
 
-@njit
+@njit(parallel=True)
 def get_reconstructed_field(planet, n, xs, ys, BX, BY, BZ):
     BSWX = np.zeros((n, n), dtype=np.double)
     BSWY = np.zeros((n, n), dtype=np.double)
@@ -29,14 +29,14 @@ def get_reconstructed_field(planet, n, xs, ys, BX, BY, BZ):
     return BSWX, BSWY, BSWZ
 
 
-@njit
+@njit(parallel=True)
 def get_reconstructed_field_pos_errs(planet, n, xs, ys, zs, BX, BY, BZ):
     BSWX = np.zeros((n, n), dtype=np.double)
     BSWY = np.zeros((n, n), dtype=np.double)
     BSWZ = np.zeros((n, n), dtype=np.double)
 
     for i in range(n):
-        for j in range(n):            
+        for j in prange(n):            
             r = np.array([xs[j][i], ys[j][i], zs[j][i]], dtype=np.double)
             [BSWX[j][i], BSWY[j][i], BSWZ[j][i]] = planet.IMF_from_MS(r, np.array([BX[j][i], BY[j][i], BZ[j][i]], dtype=np.double)) # !!!           
     return BSWX, BSWY, BSWZ

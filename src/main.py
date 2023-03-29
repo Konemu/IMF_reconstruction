@@ -1,6 +1,6 @@
 import planets
 import plotting
-import errors
+import param_study
 
 import numpy as np
 import matplotlib as plt
@@ -21,22 +21,44 @@ def main():
     })
 
     begin = time.time()
-
-    Earth = planets.Planet(R_planet=1, R_bowshock=12.5, R_magnetopause=9, IMF=np.asarray([-1, 0, 0], dtype=np.double))
-    #plotting.plot_field_lines(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=200, path="plots/")
-    #plotting.plot_determinant(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=1000, path="plots/")
-    #plotting.plot_rel_errs_geometry(planet=Earth, R_bs_dist=12.6, R_mp_dist=9.1, n_r=1000, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
-    #plotting.plot_rel_errs_field(planet=Earth, n_r=200, n_avg=1, sigma=0.1, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
+    R_planet=1
+    R_bowshock=12.5
+    R_magnetopause=9
+    n_r = 200
+    xmin = -10
+    xmax = 15
+    ymin = -20
+    ymax = 20
     
-    
-    sigs = np.array([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000]) / 6371
+    IMFs = [[ 1, 0, 0],
+            [ 0, 1, 0],
+            [ 0, 0, 1],
+            [ 1, 1, 0],
+            [ 0, 1, 1],
+            [ 1, 1, 1],
+            [-1, 0, 0],
+            [ 0,-1, 0],
+            [ 0, 0,-1],
+            [-1,-1, 0],
+            [ 0,-1,-1],
+            [-1,-1,-1],
+            [ 1,-1, 0],
+            [ 0, 1,-1],
+            [-1, 1, 0],
+            [ 0,-1, 1],
+            [ 1,-1, 1],
+            [-1, 1, 1],
+            [ 1, 1,-1],
+            [-1,-1, 1],
+            [ 1,-1,-1]]
+    sigmas = np.array([10, 20, 50, 100, 200, 500]) / 6371
 
-    #for sig in sigs:
-    #    plotting.plot_rel_errs_pos(planet=Earth, n_r=200, n_avg=1, sigma=sig, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
-    plotting.plot_rel_errs_scaling(planet=Earth, n_r=200, sigmas=sigs, percentile=99, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/")
+    param_study.study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigmas, xmin, xmax, ymin, ymax, path="plots/param_study_pos/")    
 
     end = time.time()
     print(end-begin, "s")
 
 if __name__ == "__main__":
     main()
+
+
