@@ -14,12 +14,21 @@ warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 import time
 
 
-def main():    
+def main():
     plt.rcParams.update({
     "text.usetex": True,
-    "text.latex.preamble": r"\usepackage{amsmath}\usepackage{amssymb}\usepackage{parskip}"
+    "text.latex.preamble": r"\usepackage{amsmath}\usepackage{amssymb}\usepackage{parskip}",
+    "axes.labelsize": 22,
+    "xtick.labelsize": 16,
+    "ytick.labelsize": 16,
+    "axes.titlesize": 24
     })
-
+    #Earth = planets.Planet(R_planet=1, R_bowshock=12.5, R_magnetopause=9, IMF=np.asarray([-1, 0, 0], dtype=np.double))
+    #plotting.plot_determinant(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=1000, path="plots/vortrag1/")
+    #plotting.plot_rel_errs_geometry(planet=Earth, R_bs_dist=12.6, R_mp_dist=9.1, n_r=1000, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
+    #sigma = 0.05
+    #plotting.plot_rel_errs_field(planet=Earth, n_r=200, n_avg=1, sigma=sigma, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
+        
     begin = time.time()
     R_planet=1
     R_bowshock=12.5
@@ -30,7 +39,7 @@ def main():
     ymin = -20
     ymax = 20
     
-    IMFs = [[ 1, 0, 0],
+    IMFs = [[ 1, 0, 0], # are normalised elsewhere
             [ 0, 1, 0],
             [ 0, 0, 1],
             [ 1, 1, 0],
@@ -57,6 +66,7 @@ def main():
 
     end = time.time()
     print(end-begin, "s")
+    
 
 if __name__ == "__main__":
     main()

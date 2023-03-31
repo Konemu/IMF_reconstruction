@@ -2,6 +2,7 @@ import planets
 import errors
 import numpy as np
 import matplotlib.pyplot as plt
+import param_study
 
 def parab(y, f, R):
     return -(y**2) / (4 * f) + R
@@ -34,11 +35,12 @@ def plot_field_lines(planet, xmin, xmax, ymin, ymax, n, path):
 
     ax.set_xlabel("$x$ ($R_E$)")
     ax.set_ylabel("$y$ ($R_E$)")
-    ax.set_title("$\\vec{B}$ field lines for $\\vec{B}_{SW} = -B_0 \\vec{e}_x$")
+    #ax.set_title("$\\vec{B}_{\\text{SW}} = -B_0 \\,\\vec{e}_x$")
 
+    fname = param_study.determine_path_from_IMF(planet.IMF)
     fig.tight_layout()
-    fig.savefig(path+"field_x.pdf")
-    fig.savefig(path+"field_x.png", dpi=300)
+    fig.savefig(path+"field_" + fname + ".pdf", bbox_inches='tight')
+    #fig.savefig(path+"field_" + fname + ".pdf", dpi=300, bbox_inches='tight')
     plt.close(fig)
 
 def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):    
@@ -70,10 +72,10 @@ def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):
     ax.set_xlabel("$x$ ($R_E$)")
     ax.set_ylabel("$y$ ($R_E$)")
     ax.set_title("$\\det T$")
-
+    
     fig.tight_layout()
-    fig.savefig(path+"det.pdf")
-    fig.savefig(path+"det.png", dpi=300)
+    fig.savefig(path+"det.pdf", bbox_inches='tight')
+    #fig.savefig(path+"det.png", dpi=300, bbox_inches='tight')
     plt.close(fig)
 
 
@@ -86,7 +88,7 @@ def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, 
 
     quadcontourset = ax.pcolormesh(
         xs, ys, relative_errs_mag,  # change this to `levels` to get the result that you want
-        vmin=0, vmax=0.15, rasterized=True
+        vmin=0, vmax=0.2, rasterized=True
     )
     fig.colorbar(
         ScalarMappable(norm=quadcontourset.norm, cmap=quadcontourset.cmap), # type: ignore
@@ -112,10 +114,10 @@ def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, 
 
     ax.set_xlabel("$x$ ($R_E$)")
     ax.set_ylabel("$y$ ($R_E$)")
-    fig.suptitle(f"{n_r}x{n_r} grid"+", $\\tilde R_\\text{MP}=9.1$, $\\tilde R_\\text{BS}=12.6,$")
+    #fig.suptitle(f"{n_r}x{n_r} grid"+", $\\tilde R_\\text{MP}=9.1$, $\\tilde R_\\text{BS}=12.6,$")
     fig.tight_layout()
-    fig.savefig(path+"err_geometry.pdf")
-    fig.savefig(path+"err_geometry.png", dpi=300)
+    fig.savefig(path+"err_geometry.pdf", bbox_inches='tight')
+    #fig.savefig(path+"err_geometry.png", dpi=300, bbox_inches='tight')
     plt.close(fig)
 
 
@@ -125,11 +127,12 @@ def plot_rel_errs_field(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path)
     errs = [[err_X, err_Y], [err_Z, err_mag]]
     labels = [["$\\delta B_x / B_{0,x}$", "$\\delta B_y / B_{0,y}$"], ["$\\delta B_z / B_{0,z}$", "$\\delta |\\vec{B}| / B_0$"]]
 
-    fig, axes = plt.subplots(ncols=2, nrows=2)
+    fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(10, 10))
 
     for axl, errl, labl in zip(axes, errs, labels):
         for ax, err, lab in zip(axl, errl, labl):
-            cont = ax.pcolormesh(xs, ys, err, vmin=-0.4, vmax=0.4, rasterized=True, cmap="bwr")
+            vmax = np.percentile(err, 99, axis=None)
+            cont = ax.pcolormesh(xs, ys, err, vmin=-vmax, vmax=vmax, rasterized=True, cmap="bwr") # type: ignore
             cbar = fig.colorbar(cont)
             ax.set_title(lab)
             ax.set_aspect(1)
@@ -145,11 +148,11 @@ def plot_rel_errs_field(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path)
             ax.set_xlabel("$x$ ($R_E$)")
             ax.set_ylabel("$y$ ($R_E$)")
     
-    fig.suptitle(f"$\\sigma={sigma}$ $B_0$, $n={n_avg}$ averages, {n_r}x{n_r} grid")
+    #fig.suptitle(f"$\\sigma={sigma}$ $B_0$, $n={n_avg}$ averages, {n_r}x{n_r} grid")
     
     fig.tight_layout()
     fig.savefig(path+"err_field.pdf")       
-    fig.savefig(path+"err_field.png", dpi=300)       
+    #fig.savefig(path+"err_field.png", dpi=300, bbox_inches='tight')       
     plt.close(fig)
 
 def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
@@ -158,7 +161,7 @@ def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
     errs = [[err_X, err_Y], [err_Z, err_mag]]
     labels = [["$\\delta B_x / B_{0,x}$", "$\\delta B_y / B_{0,y}$"], ["$\\delta B_z / B_{0,z}$", "$\\delta |\\vec{B}| / B_0$"]]
 
-    fig, axes = plt.subplots(ncols=2, nrows=2)
+    fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(10, 10))
 
     for axl, errl, labl in zip(axes, errs, labels):
         for ax, err, lab in zip(axl, errl, labl):
@@ -181,11 +184,11 @@ def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
     
     fig.suptitle("Field reconstructed from erronious position information.\\\\" 
                  + f"$\\sigma={np.round(sigma * 6371, 0)}$ km, {n_r}x{n_r} grid, " + "$\\vec{B}_\\text{SW} = B_0\\,"
-                 + f"({planet.IMF[0]},{planet.IMF[1]},{planet.IMF[2]})$ \\\\ Colorbar maximum = 99th percentile")
+                 + f"({np.round(planet.IMF[0],2)},{np.round(planet.IMF[1],2)},{np.round(planet.IMF[2],2)})$ \\\\ Colorbar maximum = 99th percentile")
     
     fig.tight_layout()
-    fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}_x{planet.IMF[0]}_y{planet.IMF[1]}_z{planet.IMF[2]}.pdf")       
-    fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}_x{planet.IMF[0]}_y{planet.IMF[1]}_z{planet.IMF[2]}.png", dpi=300)       
+    fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}_x{np.round(planet.IMF[0],2)}_y{np.round(planet.IMF[1],2)}_z{np.round(planet.IMF[2],2)}.pdf")       
+    fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}_x{np.round(planet.IMF[0],2)}_y{np.round(planet.IMF[1],2)}_z{np.round(planet.IMF[2],2)}.png", dpi=300)       
     plt.close(fig)
 
 

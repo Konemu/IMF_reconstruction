@@ -5,6 +5,7 @@ import numpy as np
 
 def study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigmas, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/"):
     for IMF in IMFs:
+        IMF = np.asarray(IMF) / np.linalg.norm(IMF) # !
         imfpath = path + determine_path_from_IMF(IMF) + "/"
         planet = planets.Planet(R_planet=R_planet, R_bowshock=R_bowshock, R_magnetopause=R_magnetopause, IMF=np.asarray(IMF, dtype=np.double))
         for sigma in sigmas:
