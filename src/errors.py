@@ -59,7 +59,7 @@ def relative_reconstruction_errors_geometry(planet, R_bs_dist, R_mp_dist, n_r, x
         for j in range(n_r):            
             r = np.array([xs[i], ys[j], 0], dtype=np.double)
             if planet.check_vector_in_sheath(r):
-                relative_errs_mag[j][i] = ( np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]**2) - B0) / B0
+                relative_errs_mag[j][i] = np.abs(( np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]**2) - B0) / B0)
     
 
     return xs, ys, relative_errs_mag
@@ -91,7 +91,7 @@ def relative_reconstruction_errors_field(planet, n_r, n_avg, sigma, xmin, xmax, 
                     err_X[j][i] += (BSWX_dist[j][i] - IMF[0]) / n_avg
                     err_Y[j][i] += (BSWY_dist[j][i] - IMF[1]) / n_avg
                     err_Z[j][i] += (BSWZ_dist[j][i] - IMF[2]) / n_avg
-                    err_mag[j][i] += (np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]) - B0) / n_avg
+                    err_mag[j][i] += np.abs((np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]**2) - B0) / n_avg)
 
     err_X /= B0
     err_Y /= B0
@@ -130,7 +130,7 @@ def relative_reconstruction_errors_pos(planet, n_r, n_avg, sigma, xmin, xmax, ym
                     err_X[j][i] += (BSWX_dist[j][i] - IMF[0]) / n_avg
                     err_Y[j][i] += (BSWY_dist[j][i] - IMF[1]) / n_avg
                     err_Z[j][i] += (BSWZ_dist[j][i] - IMF[2]) / n_avg
-                    err_mag[j][i] += (np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]) - B0) / n_avg
+                    err_mag[j][i] += (np.sqrt(BSWX_dist[j][i]**2 + BSWY_dist[j][i]**2 + BSWZ_dist[j][i]**2) - B0) / n_avg
 
     err_X /= B0
     err_Y /= B0

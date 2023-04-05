@@ -2,6 +2,8 @@ import planets
 import errors
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+from scipy.optimize import curve_fit
 import param_study
 
 def parab(y, f, R):
@@ -56,7 +58,7 @@ def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):
 
     fig, ax = plt.subplots()
 
-    cont = ax.pcolormesh(xs, ys, det, rasterized=True)
+    cont = ax.pcolormesh(xs, ys, det, rasterized=True, cmap="GnBu")
     cbar = fig.colorbar(cont)
 
     ax.add_artist(plt.Circle((0, 0), planet.R_planet, color="black")) # type: ignore
@@ -78,6 +80,42 @@ def plot_determinant(planet, xmin, xmax, ymin, ymax, n, path):
     #fig.savefig(path+"det.png", dpi=300, bbox_inches='tight')
     plt.close(fig)
 
+def plot_condition(planet, xmin, xmax, ymin, ymax, n, path):    
+    xs = np.linspace(xmin, xmax, n)
+    ys = np.linspace(ymin, ymax, n)        
+    cond = np.zeros((n, n), dtype=np.double)
+
+    for i in range(n):
+        for j in range(n):            
+            r = np.array([xs[i], ys[j], 0], dtype=np.double)
+            if planet.check_vector_in_sheath(r):
+                cond[j][i] = np.linalg.norm( planet.trans_mat(r) ) * np.linalg.norm( np.linalg.inv(planet.trans_mat(r)) )  # !!!
+
+    fig, ax = plt.subplots()
+    vmax = np.percentile(cond, 99, axis=None)
+
+    cont = ax.pcolormesh(xs, ys, cond, vmin=0, vmax=vmax, rasterized=True, cmap="GnBu") # type: ignore
+    cbar = fig.colorbar(cont)
+
+    ax.add_artist(plt.Circle((0, 0), planet.R_planet, color="black")) # type: ignore
+    f_bs = planet.R_bowshock - planet.R_magnetopause / 2
+    f_mp = planet.R_magnetopause / 2
+    ax.plot(parab(ys, f_bs, planet.R_bowshock), ys, color="black")
+    ax.plot(parab(ys, f_mp, planet.R_magnetopause), ys, color="black")
+
+    ax.set_aspect(1)
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
+
+    ax.set_xlabel("$x$ ($R_E$)")
+    ax.set_ylabel("$y$ ($R_E$)")
+    ax.set_title("$\\kappa (T)$")
+    
+    fig.tight_layout()
+    fig.savefig(path+"cond.pdf", bbox_inches='tight')
+    #fig.savefig(path+"cond.png", dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
 
 def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, ymax, path):
     xs, ys, relative_errs_mag = errors.relative_reconstruction_errors_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, ymax)
@@ -88,7 +126,7 @@ def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, 
 
     quadcontourset = ax.pcolormesh(
         xs, ys, relative_errs_mag,  # change this to `levels` to get the result that you want
-        vmin=0, vmax=0.2, rasterized=True
+        vmin=0, vmax=0.2, rasterized=True, cmap="GnBu"
     )
     fig.colorbar(
         ScalarMappable(norm=quadcontourset.norm, cmap=quadcontourset.cmap), # type: ignore
@@ -101,7 +139,7 @@ def plot_rel_errs_geometry(planet, R_bs_dist, R_mp_dist, n_r, xmin, xmax, ymin, 
 
 
 
-    ax.set_title("$\\delta |\\vec{B}| / B_0$")
+    ax.set_title("$|\\delta \\vec{B}| / B_0$")
     ax.set_aspect(1)
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
@@ -125,14 +163,19 @@ def plot_rel_errs_field(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path)
     xs, ys, err_X, err_Y, err_Z, err_mag = errors.relative_reconstruction_errors_field(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax)
 
     errs = [[err_X, err_Y], [err_Z, err_mag]]
-    labels = [["$\\delta B_x / B_{0,x}$", "$\\delta B_y / B_{0,y}$"], ["$\\delta B_z / B_{0,z}$", "$\\delta |\\vec{B}| / B_0$"]]
+    labels = [["$\\delta B_x / B_{0}$", "$\\delta B_y / B_{0}$"], ["$\\delta B_z / B_{0}$", "$|\\delta \\vec{B}| / B_0$"]]
 
     fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(10, 10))
 
     for axl, errl, labl in zip(axes, errs, labels):
         for ax, err, lab in zip(axl, errl, labl):
             vmax = np.percentile(err, 99, axis=None)
-            cont = ax.pcolormesh(xs, ys, err, vmin=-vmax, vmax=vmax, rasterized=True, cmap="bwr") # type: ignore
+            cmap = my_cmap
+            vmin = -vmax
+            if lab == labels[-1][-1]:
+                cmap = my_non_centered_cmap
+                vmin = 0
+            cont = ax.pcolormesh(xs, ys, err, vmin=vmin, vmax=vmax, rasterized=True, cmap=cmap) # type: ignore
             cbar = fig.colorbar(cont)
             ax.set_title(lab)
             ax.set_aspect(1)
@@ -159,14 +202,19 @@ def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
     xs, ys, err_X, err_Y, err_Z, err_mag = errors.relative_reconstruction_errors_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax)
 
     errs = [[err_X, err_Y], [err_Z, err_mag]]
-    labels = [["$\\delta B_x / B_{0,x}$", "$\\delta B_y / B_{0,y}$"], ["$\\delta B_z / B_{0,z}$", "$\\delta |\\vec{B}| / B_0$"]]
+    labels = [["$\\delta B_x / B_{0}$", "$\\delta B_y / B_{0}$"], ["$\\delta B_z / B_{0}$", "$|\\delta \\vec{B}| / B_0$"]]
 
     fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(10, 10))
 
     for axl, errl, labl in zip(axes, errs, labels):
         for ax, err, lab in zip(axl, errl, labl):
-            maxerr = np.percentile(err, 99, axis=None)
-            cont = ax.pcolormesh(xs, ys, err, vmin=-maxerr, vmax=maxerr, rasterized=True, cmap="bwr") # type: ignore
+            vmax = np.percentile(err, 99, axis=None)
+            cmap = my_cmap
+            vmin = -vmax
+            if lab == labels[-1][-1]:
+                cmap = my_non_centered_cmap
+                vmin = 0
+            cont = ax.pcolormesh(xs, ys, err, vmin=vmin, vmax=vmax, rasterized=True, cmap=cmap) # type: ignore
             cbar = fig.colorbar(cont)
             ax.set_title(lab)
             ax.set_aspect(1)
@@ -183,7 +231,7 @@ def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
             ax.set_ylabel("$y$ ($R_E$)")
     
     fig.suptitle("Field reconstructed from erronious position information.\\\\" 
-                 + f"$\\sigma={np.round(sigma * 6371, 0)}$ km, {n_r}x{n_r} grid, " + "$\\vec{B}_\\text{SW} = B_0\\,"
+                 + f"$\\sigma={np.round(sigma * 6371, 1)}$ km, {n_r}x{n_r} grid, " + "$\\vec{B}_\\text{SW} = B_0\\,"
                  + f"({np.round(planet.IMF[0],2)},{np.round(planet.IMF[1],2)},{np.round(planet.IMF[2],2)})$ \\\\ Colorbar maximum = 99th percentile")
     
     fig.tight_layout()
@@ -214,22 +262,52 @@ def plot_rel_errs_scaling(planet, n_r, sigmas, percentile, xmin, xmax, ymin, yma
         percentile_err_Y[i] = np.percentile(err_Y, percentile, axis=None)
         percentile_err_Z[i] = np.percentile(err_Z, percentile, axis=None)
 
+    sigmas_km = sigmas * 6371
+
+    p1, c1 = curve_fit(lin, sigmas_km, percentile_err_mag)
+    p2, c2 = curve_fit(lin, sigmas_km, percentile_err_X)
+    p3, c3 = curve_fit(lin, sigmas_km, percentile_err_Y)
+    p4, c4 = curve_fit(lin, sigmas_km, percentile_err_Z)
+
     fig, ax = plt.subplots()
     #ax.plot(sigmas, mean_err_mag, label="Mean err magnitude")
     #ax.plot(sigmas, mean_err_X, label="Mean err X")
     #ax.plot(sigmas, mean_err_Y, label="Mean err Y")
     #ax.plot(sigmas, mean_err_Z, label="Mean err Y")
-    ax.plot(sigmas, percentile_err_mag, label=f"{percentile}th percentile err magnitude")
-    ax.plot(sigmas, percentile_err_X, label=f"{percentile}th percentile err X")
-    ax.plot(sigmas, percentile_err_Y, label=f"{percentile}th percentile err Y")
-    ax.plot(sigmas, percentile_err_Z, label=f"{percentile}th percentile err Z")
+    ax.plot(sigmas_km, percentile_err_mag, label=f"{percentile}th percentile err magnitude, $\\delta \\approx {np.format_float_scientific(p1[0], 2)}\\,\\sigma  {np.format_float_scientific(p1[1], 2, sign=True)}$")
+    ax.plot(sigmas_km, percentile_err_X, label=f"{percentile}th percentile err X, $\\delta \\approx {np.format_float_scientific(p2[0], 2)}\\,\\sigma  {np.format_float_scientific(p2[1], 2, sign=True)}$")
+    ax.plot(sigmas_km, percentile_err_Y, label=f"{percentile}th percentile err Y, $\\delta \\approx {np.format_float_scientific(p3[0], 2)}\\,\\sigma  {np.format_float_scientific(p3[1], 2, sign=True)}$")
+    ax.plot(sigmas_km, percentile_err_Z, label=f"{percentile}th percentile err Z, $\\delta \\approx {np.format_float_scientific(p4[0], 2)}\\,\\sigma  {np.format_float_scientific(p4[1], 2, sign=True)}$")
 
-    ax.set_xlabel("$\\sigma$ ($R_\\text{E}$)")
-    ax.set_ylabel("$\\delta B$")
+    ax.set_xlabel("$\\sigma$ (km)")
+    ax.set_ylabel("$\\delta B / B_0$")
     ax.legend()
-    ax.loglog()    
+    #ax.loglog()    
     
     fig.tight_layout()
-    fig.savefig(path+f"err_scale.pdf")       
-    fig.savefig(path+f"err_scale.png", dpi=300)       
+    fig.savefig(path+f"err_scale_x{np.round(planet.IMF[0],2)}_y{np.round(planet.IMF[1],2)}_z{np.round(planet.IMF[2],2)}.pdf")       
+    fig.savefig(path+f"err_scale_x{np.round(planet.IMF[0],2)}_y{np.round(planet.IMF[1],2)}_z{np.round(planet.IMF[2],2)}.png", dpi=300)       
     plt.close(fig)
+
+
+
+my_cmap = LinearSegmentedColormap.from_list('my_gradient', (
+    # Edit this gradient at https://eltos.github.io/gradient/#0:0025B3-15:4C71FF-30:D2DBFF-50:FFFFFF-70:FED2D4-85:FC4A53-100:C7030D
+    (0.000, (0.000, 0.145, 0.702)),
+    (0.150, (0.298, 0.443, 1.000)),
+    (0.300, (0.824, 0.859, 1.000)),
+    (0.500, (1.000, 1.000, 1.000)),
+    (0.700, (0.996, 0.824, 0.831)),
+    (0.850, (0.988, 0.290, 0.325)),
+    (1.000, (0.780, 0.012, 0.051))))
+
+my_non_centered_cmap = LinearSegmentedColormap.from_list('my_other_gradient', (
+    # Edit this gradient at https://eltos.github.io/gradient/#0:0025B3-10:4C71FF-25:D2DBFF-50:FFFFFF-75:FED2D4-90:FC4A53-100:C7030D
+    (0.000, (1.000, 1.000, 1.000)),
+    (0.400, (0.996, 0.824, 0.831)),
+    (0.700, (0.988, 0.290, 0.325)),
+    (1.000, (0.780, 0.012, 0.051))))
+
+
+def lin(x, a, b):
+    return a*x + b

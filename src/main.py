@@ -24,11 +24,12 @@ def main():
     "axes.titlesize": 24
     })
     #Earth = planets.Planet(R_planet=1, R_bowshock=12.5, R_magnetopause=9, IMF=np.asarray([-1, 0, 0], dtype=np.double))
+    #plotting.plot_condition(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=1000, path="plots/vortrag1/")
     #plotting.plot_determinant(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=1000, path="plots/vortrag1/")
     #plotting.plot_rel_errs_geometry(planet=Earth, R_bs_dist=12.6, R_mp_dist=9.1, n_r=1000, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
-    #sigma = 0.05
-    #plotting.plot_rel_errs_field(planet=Earth, n_r=200, n_avg=1, sigma=sigma, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
-        
+    #sigma = 0.1
+    #plotting.plot_rel_errs_field(planet=Earth, n_r=1000, n_avg=1, sigma=sigma, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
+
     begin = time.time()
     R_planet=1
     R_bowshock=12.5
@@ -60,9 +61,10 @@ def main():
             [ 1, 1,-1],
             [-1,-1, 1],
             [ 1,-1,-1]]
-    sigmas = np.array([10, 20, 50, 100, 200, 500]) / 6371
+    plot_sigma = 10/6371
+    sigmas = np.array([1, 5, 10, 20, 50, 100, 200, 500, 1000, 6371]) / 6371
 
-    param_study.study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigmas, xmin, xmax, ymin, ymax, path="plots/param_study_pos/")    
+    param_study.study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, plot_sigma, sigmas, xmin, xmax, ymin, ymax, path="plots/param_study_pos/")    
 
     end = time.time()
     print(end-begin, "s")
