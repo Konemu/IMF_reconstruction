@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib as plt
 
 from numba import set_num_threads
-set_num_threads(20)
+set_num_threads(6)
 from numba.core.errors import NumbaPerformanceWarning
 import warnings
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
@@ -31,6 +31,7 @@ def main():
     #plotting.plot_rel_errs_field(planet=Earth, n_r=1000, n_avg=1, sigma=sigma, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
 
     begin = time.time()
+    """
     R_planet=1
     R_bowshock=12.5
     R_magnetopause=9
@@ -64,7 +65,11 @@ def main():
     plot_sigma = 10/6371
     sigmas = np.array([1, 5, 10, 20, 50, 100, 200, 500, 1000, 6371]) / 6371
 
-    param_study.study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, plot_sigma, sigmas, xmin, xmax, ymin, ymax, path="plots/param_study_pos/")    
+    param_study.study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, plot_sigma, sigmas, xmin, xmax, ymin, ymax, path="plots/param_study_pos/")"""
+    IMFs = []
+    for i in range(100):
+        IMFs.append([np.random.normal(0, 1), np.random.normal(0, 1), np.random.normal(0, 1)])
+    param_study.err_scale_orientation(R_planet=1, R_bowshock=12.5, R_magnetopause=9, n_r=200, IMFs = IMFs, sigma=10/6731, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/components/")
 
     end = time.time()
     print(end-begin, "s")
