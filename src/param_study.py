@@ -64,6 +64,7 @@ def err_scale_orientation(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigma
     ax.set_ylabel("99th Perc. $|\\delta B|$")
     fig.tight_layout()
     fig.savefig(path+f"err_yz_{np.round(sigma*6371, 1)}.pdf")  
+    fig.savefig(path+f"err_yz_{np.round(sigma*6371, 1)}.png", dpi=300)  
     plt.close(fig)
 
     fig, ax = plt.subplots()
@@ -73,6 +74,7 @@ def err_scale_orientation(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigma
     ax.set_ylabel("99th Perc. $|\\delta B|$")
     fig.tight_layout()
     fig.savefig(path+f"err_zy_{np.round(sigma*6371, 1)}.pdf")  
+    fig.savefig(path+f"err_zy_{np.round(sigma*6371, 1)}.png", dpi=300)  
     plt.close(fig)
 
     fig, ax = plt.subplots()
@@ -82,6 +84,7 @@ def err_scale_orientation(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigma
     ax.set_ylabel("99th Perc. $|\\delta B|$")
     fig.tight_layout()
     fig.savefig(path+f"err_xy_{np.round(sigma*6371, 1)}.pdf")  
+    fig.savefig(path+f"err_xy_{np.round(sigma*6371, 1)}.png", dpi=300)  
     plt.close(fig)
 
     fig, ax = plt.subplots()
@@ -91,6 +94,7 @@ def err_scale_orientation(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigma
     ax.set_ylabel("99th Perc. $|\\delta B|$")
     fig.tight_layout()
     fig.savefig(path+f"err_yx_{np.round(sigma*6371, 1)}.pdf")  
+    fig.savefig(path+f"err_yx_{np.round(sigma*6371, 1)}.png", dpi=300)  
     plt.close(fig)
 
     fig, ax = plt.subplots()
@@ -100,6 +104,7 @@ def err_scale_orientation(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigma
     ax.set_ylabel("99th Perc. $|\\delta B|$")
     fig.tight_layout()
     fig.savefig(path+f"err_xz_{np.round(sigma*6371, 1)}.pdf")  
+    fig.savefig(path+f"err_xz_{np.round(sigma*6371, 1)}.png", dpi=300)  
     plt.close(fig)
 
     fig, ax = plt.subplots()
@@ -109,6 +114,7 @@ def err_scale_orientation(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, sigma
     ax.set_ylabel("99th Perc. $|\\delta B|$")
     fig.tight_layout()
     fig.savefig(path+f"err_zx_{np.round(sigma*6371, 1)}.pdf")  
+    fig.savefig(path+f"err_zx_{np.round(sigma*6371, 1)}.png", dpi=300)  
     plt.close(fig)
     return
 

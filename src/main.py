@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib as plt
 
 from numba import set_num_threads
-set_num_threads(6)
+set_num_threads(14)
 from numba.core.errors import NumbaPerformanceWarning
 import warnings
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
