@@ -230,9 +230,9 @@ def plot_rel_errs_pos(planet, n_r, n_avg, sigma, xmin, xmax, ymin, ymax, path):
             ax.set_xlabel("$x$ ($R_E$)")
             ax.set_ylabel("$y$ ($R_E$)")
     
-    fig.suptitle("Field reconstructed from erronious position information.\\\\" 
-                 + f"$\\sigma={np.round(sigma * 6371, 1)}$ km, {n_r}x{n_r} grid, " + "$\\vec{B}_\\text{SW} = B_0\\,"
-                 + f"({np.round(planet.IMF[0],2)},{np.round(planet.IMF[1],2)},{np.round(planet.IMF[2],2)})$ \\\\ Colorbar maximum = 99th percentile")
+    #fig.suptitle("Field reconstructed from erronious position information.\\\\" 
+    #             + f"$\\sigma={np.round(sigma * 6371, 1)}$ km, {n_r}x{n_r} grid, " + "$\\vec{B}_\\text{SW} = B_0\\,"
+    #             + f"({np.round(planet.IMF[0],2)},{np.round(planet.IMF[1],2)},{np.round(planet.IMF[2],2)})$ \\\\ Colorbar maximum = 99th percentile")
     
     fig.tight_layout()
     fig.savefig(path+f"err_pos_sig_{np.round(sigma * 6371)}_x{np.round(planet.IMF[0],2)}_y{np.round(planet.IMF[1],2)}_z{np.round(planet.IMF[2],2)}.pdf")       

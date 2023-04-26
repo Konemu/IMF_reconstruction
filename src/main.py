@@ -23,15 +23,8 @@ def main():
     "ytick.labelsize": 16,
     "axes.titlesize": 24
     })
-    #Earth = planets.Planet(R_planet=1, R_bowshock=12.5, R_magnetopause=9, IMF=np.asarray([-1, 0, 0], dtype=np.double))
-    #plotting.plot_condition(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=1000, path="plots/vortrag1/")
-    #plotting.plot_determinant(planet=Earth, xmin=-10, xmax = 15, ymin=-20, ymax = 20, n=1000, path="plots/vortrag1/")
-    #plotting.plot_rel_errs_geometry(planet=Earth, R_bs_dist=12.6, R_mp_dist=9.1, n_r=1000, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
-    #sigma = 0.1
-    #plotting.plot_rel_errs_field(planet=Earth, n_r=1000, n_avg=1, sigma=sigma, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/vortrag1/")
 
-    begin = time.time()
-    
+    # Geometry and resolution
     R_planet=1
     R_bowshock=12.5
     R_magnetopause=9
@@ -40,7 +33,11 @@ def main():
     xmax = 15
     ymin = -20
     ymax = 20
+
+
+    begin = time.time()
     
+    # Fields
     IMFs = [[ 1, 0, 0], # are normalised elsewhere
             [ 0, 1, 0],
             [ 0, 0, 1],
@@ -66,17 +63,19 @@ def main():
             [ 1, 1,-1],
             [-1,-1, 1],
             [ 1,-1,-1]]
-    plot_sigma = 10/6371
-    sigmas = np.array([1, 5, 10, 20, 50, 100, 200, 500, 1000, 6371]) / 6371
+    plot_sigma = 10/6371 # std dev for plotting spatially resolved component errors
+    sigmas = np.array([1, 5, 10, 20, 50, 100, 200, 500, 1000, 6371]) / 6371 # std devs for plotting max err scaling
 
+    # plot spatially resolved component errors and max err scaling for all IMFs above
     param_study.study_pos_errors(R_planet, R_bowshock, R_magnetopause, n_r, IMFs, plot_sigma, sigmas, xmin, xmax, ymin, ymax, path="plots/param_study_pos/")
-    """
+    
+    # generate random fields and plot component <-> error correlations
     IMFs = []
     for i in range(100):
         IMFs.append([np.random.normal(0, 1), np.random.normal(0, 1), np.random.normal(0, 1)])
     param_study.err_scale_orientation(R_planet=1, R_bowshock=12.5, R_magnetopause=9, n_r=200, IMFs = IMFs, sigma=10/6731, xmin=-10, xmax = 15, ymin=-20, ymax = 20, path="plots/components/")
-    """
     
+    # print time elapsed
     end = time.time()
     print(end-begin, "s")
     

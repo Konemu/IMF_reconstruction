@@ -3,12 +3,7 @@ import numba as nb
 from numba import double, boolean, njit
 from numba.experimental import jitclass
 
-t = nb.types.Array(dtype=np.double, ndim=1, layout="A")
-
-coord_transform = np.array([[0, 0, 1],
-                            [0,-1, 0],
-                            [1, 0, 0]],dtype=np.double)
-
+# needed for numba classes as of now
 planet_spec = [
     ("R_planet", double),
     ("R_bowshock", double),
@@ -18,6 +13,9 @@ planet_spec = [
     ("IMF_known", boolean),
 ]
 
+
+# compiled class that aggregates geometric information of a planet and its IMF (if given)
+# provides routines for calculating the MS field from the IMF and vice versa
 @jitclass(planet_spec)
 class Planet:    
     def __init__(self, R_planet, R_bowshock, R_magnetopause, IMF):
@@ -57,7 +55,9 @@ class Planet:
         return np.linalg.norm(self.r_focus - np.asarray(r, dtype=np.double))
     
 
-    #
+    # r: 3D XYZ coordinates
+    # return MS field at r if IMF known
+    # does not check if r in MS!
     def MS_from_IMF(self, r):
         if not self.IMF_known:
             print("Cannot infer magnetosheath field from IMF if IMF is not given.")      
@@ -66,14 +66,23 @@ class Planet:
             return self.trans_mat(r) @ self.IMF
         
     
+    # r: 3D XYZ coordinates
+    # B: 3D MS field
+    # return IMF from MS-field
+    # does not check if r in MS!
     def IMF_from_MS(self, r, B):
         return np.linalg.inv(self.trans_mat(r)) @ B
         
     
+    # equation for the boundary parabola
+    # y, z: coords
+    # f: focus
+    # R: radius of MP or BS
     def parab(self, y, z, f, R):
         return -(y**2 + z**2) / (4 * f) + R
     
-    #
+    # r: 3D XYZ coordinates
+    # does what it says
     def check_vector_in_sheath(self, r):
         [x, y, z] = r
         f_bs = self.R_bowshock - self.R_magnetopause / 2
